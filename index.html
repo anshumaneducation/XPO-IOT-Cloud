@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPO IOT Cloud Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+</head>
+<body>
+    <h1>XPO IOT Cloud Dashboard</h1>
+
+    <!-- Login Form -->
+    <div id="login-container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <label for="userId">User ID</label>
+            <input type="text" id="userId" required placeholder="Enter User ID">
+            <label for="password">Password</label>
+            <input type="password" id="password" required placeholder="Enter Password">
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div id="data-container" style="display: none;">
+        <h2><span id="parameter-iot"></span> <span>=</span> <span id="value-iot"></span></h2>
+        <button id="logout-button">Logout</button>
+    </div>
+
+    <!-- Firebase and Toastr Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Main JavaScript File -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
