@@ -37,13 +37,17 @@ export function authenticate() {
             localStorage.setItem('username', enteredUsername);
             localStorage.setItem('password', enteredPassword);
 
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('data-container').style.display = 'block';
+            
 
         if (enteredPassword === correctPassword) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('data-container').style.display = 'block';
             // Correct password
             fetchAndDisplayData(enteredUsername);
         } 
+        else{
+            alert("Username or password is incorrect!")
+        }
         
         
     }, (error) => {
