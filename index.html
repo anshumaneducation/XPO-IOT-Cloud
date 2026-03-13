@@ -1,37 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XPO IOT Cloud Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XPO IoT Cloud Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>XPO IOT Cloud Dashboard</h1>
 
-    <!-- Login Form -->
-    <div id="login-container">
-        <h2>Login</h2>
-        <form id="login-form">
-            <label for="userId">User ID</label>
-            <input type="text" id="userId" required placeholder="Enter User ID">
-            <label for="password">Password</label>
-            <input type="password" id="password" required placeholder="Enter Password">
-            <button type="submit">Login</button>
-        </form>
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-bracket">[</span>XPO<span class="logo-accent">IoT</span><span class="logo-bracket">]</span>
+      </div>
+      <div class="status-bar">
+        <span class="dot red" id="status-dot"></span>
+        <span id="status-text">Not connected</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Login ───────────────────────────────────────────────────────── -->
+  <div id="login-container">
+    <div class="login-card">
+      <h2>AUTHENTICATE</h2>
+      <p class="login-sub">Enter your XPO IoT credentials to access your live dashboard.</p>
+      <form id="login-form" autocomplete="off">
+        <div class="field">
+          <label for="userId">USER ID</label>
+          <input type="text" id="userId" required placeholder="your-user-id" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="password">PASSWORD</label>
+          <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn-primary">
+          <span>LOGIN</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Dashboard ───────────────────────────────────────────────────── -->
+  <div id="data-container" style="display:none;">
+    <div class="dash-header">
+      <div>
+        <p class="dash-greeting">LIVE DASHBOARD</p>
+        <h2 class="dash-user">user: <span id="user-display">—</span></h2>
+      </div>
+      <button id="logout-button" class="btn-logout">LOGOUT</button>
     </div>
 
-    <!-- Data Table -->
-    <div id="data-container" style="display: none;">
-        <h2><span id="parameter-iot"></span> <span>=</span> <span id="value-iot"></span></h2>
-        <button id="logout-button">Logout</button>
+    <!-- Live data card -->
+    <div class="cards">
+      <div class="card card-main">
+        <div class="card-label">PARAMETER</div>
+        <div class="card-value" id="parameter-iot">—</div>
+      </div>
+      <div class="card-eq">=</div>
+      <div class="card card-main">
+        <div class="card-label">VALUE</div>
+        <div class="card-value" id="value-iot">—</div>
+      </div>
     </div>
 
-    <!-- Firebase and Toastr Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <p id="last-update" class="last-update">Waiting for data…</p>
+  </div>
 
-    <!-- Main JavaScript File -->
-    <script type="module" src="script.js"></script>
+  <!-- ── Scripts ─────────────────────────────────────────────────────── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script>
+    toastr.options = { positionClass: 'toast-top-right', timeOut: 3000, progressBar: true };
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

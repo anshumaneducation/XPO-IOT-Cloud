@@ -1,134 +1,176 @@
-// Import necessary Firebase libraries
+// ── Firebase ──────────────────────────────────────────────────────────────────
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js';
 import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js';
 
-// Firebase configuration
-  const firebaseConfig = {
+const firebaseConfig = {
+  apiKey: "AIzaSyAsUAVmIsCq3V9aWfnV6PFm3bd3cqGM_0w",
+  authDomain: "xpo-iot.firebaseapp.com",
+  databaseURL: "https://xpo-iot-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "xpo-iot",
+  storageBucket: "xpo-iot.firebasestorage.app",
+  messagingSenderId: "1064490535871",
+  appId: "1:1064490535871:web:f731d0f198dcd2cb9baf0a"
+};
 
-    apiKey: "AIzaSyAsUAVmIsCq3V9aWfnV6PFm3bd3cqGM_0w",
-    authDomain: "xpo-iot.firebaseapp.com",
-    databaseURL: "https://xpo-iot-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "xpo-iot",
-    storageBucket: "xpo-iot.firebasestorage.app",
-    messagingSenderId: "1064490535871",
-    appId: "1:1064490535871:web:f731d0f198dcd2cb9baf0a"
-
-  };
-
-
-// Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
-const database = getDatabase(firebaseApp);
+const database   = getDatabase(firebaseApp);
 
-// Authenticate user
+// Active Firebase listeners — kept so we can unsubscribe on logout
+let unsubscribeValue     = null;
+let unsubscribeParameter = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function setStatus(text, cls = '') {
+  const el = document.getElementById('status-dot');
+  const tx = document.getElementById('status-text');
+  el.className = 'dot ' + cls;
+  tx.textContent = text;
+}
+
+function setTimestamp() {
+  const el = document.getElementById('last-update');
+  if (el) el.textContent = 'Last update: ' + new Date().toLocaleTimeString();
+}
+
+function animateValue(elementId, newText) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.classList.remove('pop');
+  // Force reflow so animation re-triggers even for same value change
+  void el.offsetWidth;
+  el.textContent = newText;
+  el.classList.add('pop');
+}
+
+function showToast(msg, type = 'info') {
+  if (window.toastr) {
+    toastr[type](msg);
+  }
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
 export function authenticate() {
-    const usernameInput = document.getElementById('userId');
-    const passwordInput = document.getElementById('password');
-    const enteredPassword = passwordInput.value;
-    const enteredUsername = usernameInput.value.split('@')[0];
+  const usernameRaw = document.getElementById('userId').value.trim();
+  const password    = document.getElementById('password').value;
+  const username    = usernameRaw.split('@')[0];
 
-    // Fetch the correct password from Firebase
-    const passwordRef = ref(database, `/${enteredUsername}/iot_password`);
-    onValue(passwordRef, (snapshot) => {
-        const correctPassword = snapshot.val();
+  if (!username || !password) {
+    showToast('Please fill in all fields.', 'warning');
+    return;
+  }
 
-        // get data 
-        sessionStorage.setItem('username', enteredUsername);
-            localStorage.setItem('username', enteredUsername);
-            localStorage.setItem('password', enteredPassword);
+  setStatus('Authenticating…', 'yellow');
 
-            
+  const passwordRef = ref(database, `/${username}/iot_password`);
+  onValue(passwordRef, (snapshot) => {
+    const correct = snapshot.val();
 
-        if (enteredPassword === correctPassword) {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('data-container').style.display = 'block';
-            // Correct password
-            fetchAndDisplayData(enteredUsername);
-        } 
-        else{
-            alert("Username or password is incorrect!")
-        }
-        
-        
-    }, (error) => {
-        console.error("Error authenticating user:", error);
-        alert("An error occurred while logging in. Please try again.");
-    });
-}
-
-// Fetch and display data from Firebase
-function fetchAndDisplayData(userId) {
-
-    let html1 = document.getElementById("value-iot").innerHTML;
-    let html2 = document.getElementById("parameter-iot").innerHTML;
-    const value_from_db_ref_1 = ref(database, `/${userId}/Parameter`);
-    console.log(value_from_db_ref_1)
-
-    onValue(value_from_db_ref_1, (snapshot) => {
-        const parameter_from_db = snapshot.val();
-        console.log(parameter_from_db)
-        document.getElementById("parameter-iot").innerHTML = parameter_from_db;
-    });
-
-    const value_from_db_ref_2 = ref(database, `/${userId}/Value`);
-    console.log(value_from_db_ref_2)
-
-    onValue(value_from_db_ref_2, (snapshot) => {
-        const value_from_db = snapshot.val();
-        console.log(value_from_db)
-        document.getElementById("value-iot").innerHTML = value_from_db;
-    });
-    
-    
-}
-
-// Logout Function
-function logout() {
-    // Clear stored credentials
-    localStorage.removeItem('username');
-    localStorage.removeItem('password');
-    sessionStorage.removeItem('username');
-
-    // Hide data container and show login form
-    document.getElementById('data-container').style.display = 'none';
-    document.getElementById('login-container').style.display = 'block';
-
-    alert("Logged out successfully!");
-}
-
-
-
-
-// Auto-login if credentials are stored
-function autoLogin() {
-    const savedUsername = localStorage.getItem('username');
-    const savedPassword = localStorage.getItem('password');
-
-    if (savedUsername && savedPassword) {
-        const passwordRef = ref(database, `/${savedUsername}/iot_password`);
-        onValue(passwordRef, (snapshot) => {
-            const correctPassword = snapshot.val();
-            if (savedPassword === correctPassword) {
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('data-container').style.display = 'block';
-
-                fetchAndDisplayData(savedUsername);
-            } else {
-                alert('Saved credentials are invalid. Please log in again.');
-                localStorage.clear();
-            }
-        }, (error) => {
-            console.error("Error checking stored credentials:", error);
-        });
+    if (correct === null) {
+      showToast('User not found.', 'error');
+      setStatus('Not connected', 'red');
+      return;
     }
-}
-// Trigger auto-login on page load
-document.addEventListener('DOMContentLoaded', autoLogin);
 
-// Handle login form submission
-document.getElementById('login-form').addEventListener('submit', (e) => {
+    if (password === correct) {
+      // Persist credentials
+      localStorage.setItem('username', username);
+      localStorage.setItem('password', password);
+
+      showLogin(false);
+      fetchAndDisplayData(username);
+      document.getElementById('user-display').textContent = username;
+    } else {
+      showToast('Incorrect username or password.', 'error');
+      setStatus('Not connected', 'red');
+    }
+  }, (err) => {
+    console.error(err);
+    showToast('Firebase error. Check console.', 'error');
+    setStatus('Error', 'red');
+  }, { onlyOnce: true });
+}
+
+// ── Data Listener ─────────────────────────────────────────────────────────────
+function fetchAndDisplayData(userId) {
+  setStatus('Connecting…', 'yellow');
+
+  // Unsubscribe previous listeners
+  if (unsubscribeParameter) unsubscribeParameter();
+  if (unsubscribeValue)     unsubscribeValue();
+
+  const paramRef = ref(database, `/${userId}/Parameter`);
+  const valueRef = ref(database, `/${userId}/Value`);
+
+  unsubscribeParameter = onValue(paramRef, (snap) => {
+    const val = snap.val() ?? '—';
+    animateValue('parameter-iot', val);
+    setTimestamp();
+    setStatus('Live', 'green');
+  });
+
+  unsubscribeValue = onValue(valueRef, (snap) => {
+    const val = snap.val() ?? '—';
+    animateValue('value-iot', val);
+    setTimestamp();
+    setStatus('Live', 'green');
+  });
+}
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+function logout() {
+  // Stop Firebase listeners
+  if (unsubscribeParameter) { unsubscribeParameter(); unsubscribeParameter = null; }
+  if (unsubscribeValue)     { unsubscribeValue();     unsubscribeValue     = null; }
+
+  localStorage.removeItem('username');
+  localStorage.removeItem('password');
+
+  animateValue('parameter-iot', '—');
+  animateValue('value-iot',     '—');
+  setStatus('Not connected', 'red');
+  showToast('Logged out.', 'info');
+  showLogin(true);
+}
+
+// ── Auto-login ────────────────────────────────────────────────────────────────
+function autoLogin() {
+  const savedUser = localStorage.getItem('username');
+  const savedPass = localStorage.getItem('password');
+  if (!savedUser || !savedPass) return;
+
+  setStatus('Auto-login…', 'yellow');
+
+  const passwordRef = ref(database, `/${savedUser}/iot_password`);
+  onValue(passwordRef, (snap) => {
+    const correct = snap.val();
+    if (savedPass === correct) {
+      showLogin(false);
+      fetchAndDisplayData(savedUser);
+      document.getElementById('user-display').textContent = savedUser;
+    } else {
+      localStorage.clear();
+      setStatus('Session expired', 'red');
+    }
+  }, (err) => {
+    console.error('Auto-login error:', err);
+    setStatus('Auto-login failed', 'red');
+  }, { onlyOnce: true });
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function showLogin(show) {
+  document.getElementById('login-container').style.display = show ? 'flex' : 'none';
+  document.getElementById('data-container').style.display  = show ? 'none' : 'block';
+}
+
+// ── Event Wiring ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  autoLogin();
+
+  document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault();
     authenticate();
+  });
+
+  document.getElementById('logout-button').addEventListener('click', logout);
 });
-// Attach event listener to the logout button
-document.getElementById('logout-button').addEventListener('click', logout);
